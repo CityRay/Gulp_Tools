@@ -1,8 +1,8 @@
 /*
 * @Author: RayLin
 * @Date:   2015-12-02 17:44:10
-* @Last Modified by:   RayLin
-* @Last Modified time: 2015-12-23 18:15:06
+* @Last Modified by:   Ray Lin
+* @Last Modified time: 2016-06-01 16:01:55
 */
 
 // INSTALL
@@ -11,18 +11,25 @@
 var $         = require('gulp-load-plugins')();
 var gulp      = require('gulp');
 var gutil     = require('gulp-util');
-var sequence = require('run-sequence');
+var sequence  = require('run-sequence');
 var ftp       = require('vinyl-ftp');
 var ftpconfig = require('./ftpconfig');
 var header    = require('gulp-header');
+var prompt    = require('prompt');
+
+var user      = '';
+var pwd       = '';
 
 
 //Upload Files To Root Start=============================================================================
 //ROOT
 gulp.task('uploadToRoot', function(){
-    process.stdout.write('Transfering Root files...\n');
+    // process.stdout.write('Transfering Root files...\n');
 
-    var conn = ftp.create(ftpconfig);
+    if(!user && !pwd) return 0;
+
+    var conn = ftp.create(ftpconfig(user, pwd));
+
 
     var globs = [
       './Root/Content/**/*.+(css|png|gif|jpg|svg|eot|woff|woff2)',
@@ -60,8 +67,29 @@ gulp.task('message', function(){
     return gulp.src('./package.json').pipe($.notify("Upload Files Task Completed!"));
 });
 
+gulp.task('getInfo', function(cb){
+    prompt.start();
+
+    prompt.get([{name: 'username', required: true},
+        {name: 'password', hidden: true, replace: '*', required: true}],
+        function (err, result) {
+            if(err) return 0;
+
+            user = result.username;
+            pwd = result.password;
+
+            if(user && pwd){
+                cb();
+            }else{
+                return 0;
+            }
+
+        });
+});
+
 gulp.task('upload', function(cb) {
-  sequence('uploadToRoot',
+  sequence('getInfo',
+            'uploadToRoot',
             'uploadToRootCSHTML',
             'message',
             cb);

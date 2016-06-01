@@ -17,6 +17,7 @@
     "vinyl-ftp": "^0.4.5"
   },
   "dependencies": {
-    "gulp-header": "^1.7.1"
+    "gulp-header": "^1.7.1",
+    "prompt": "^1.0.0"
   }
 }
